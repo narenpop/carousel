@@ -1,16 +1,29 @@
-# React + Vite
+Card Stack Carousel (Event Recommendation UI)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A smooth, interactive card-stack carousel designed to simulate an AI assistant recommending events inside a chat interface.
 
-Currently, two official plugins are available:
+This project focuses heavily on animation choreography, gesture handling, and delightful UI interactions — inspired by modern conversational UIs.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+✨ Features
+🃏 Card Stack Layout – Layered cards with depth and perspective
+👆 Swipe / Drag Gestures – Intuitive navigation between cards
+🎯 Physics-based Animations – Smooth transitions with natural motion
+🔄 Infinite Looping – Seamless cycling through cards
+💬 Chat-style Embedding – Designed to sit inside an assistant message bubble
+⚡ High Performance – Optimized rendering and animation handling
+🎥 Preview
 
-## React Compiler
+Add a GIF or screen recording here (very important for UI roles)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+🛠️ Tech Stack
+React.js
+Tailwind CSS
+Framer Motion (for animations & gestures)
+🧠 What I Focused On
 
-## Expanding the ESLint configuration
+This project is not just about UI — it's about interaction quality:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Carefully tuned animation timing & easing
+Coordinated multi-element choreography
+Responsive gesture tracking
+Maintaining 60fps performance
