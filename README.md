@@ -1,29 +1,28 @@
-Card Stack Carousel (Event Recommendation UI)
+# Card Stack Carousel
 
-A smooth, interactive card-stack carousel designed to simulate an AI assistant recommending events inside a chat interface.
+A motion-first event recommendation carousel built for a chat-like assistant bubble.
 
-This project focuses heavily on animation choreography, gesture handling, and delightful UI interactions — inspired by modern conversational UIs.
+## What’s implemented
+- Swipeable card stack with layered depth and peek cards
+- Card-to-card forward swipe with simultaneous front/back movement
+- Card-to-list transition at the final index
+- Backward list-to-card swipe with mirrored motion
+- Page-dot indicator that updates only at commit
+- Reduced-motion support with a 120ms cross-fade alternative
+- Responsive width recalculation on resize
+- Gesture interruption support for repeated swipes
 
-✨ Features
-🃏 Card Stack Layout – Layered cards with depth and perspective
-👆 Swipe / Drag Gestures – Intuitive navigation between cards
-🎯 Physics-based Animations – Smooth transitions with natural motion
-🔄 Infinite Looping – Seamless cycling through cards
-💬 Chat-style Embedding – Designed to sit inside an assistant message bubble
-⚡ High Performance – Optimized rendering and animation handling
-🎥 Preview
+## Tech stack
+- React
+- Inline CSS for fast, focused layout
+- `requestAnimationFrame` driven animation choreography
 
-Add a GIF or screen recording here (very important for UI roles)
+## Notes
+- `src/components/CardStackCarousel1.jsx` is the polished implementation shown in `src/App.jsx`
+- The list mode is rendered as a compact vertical rows view after the last card
+- A screen recording should be captured locally to demonstrate real-time feel and gesture quality
 
-🛠️ Tech Stack
-React.js
-Tailwind CSS
-Framer Motion (for animations & gestures)
-🧠 What I Focused On
-
-This project is not just about UI — it's about interaction quality:
-
-Carefully tuned animation timing & easing
-Coordinated multi-element choreography
-Responsive gesture tracking
-Maintaining 60fps performance
+## Next improvements
+- Add a native React Native version
+- Add a dedicated reduced-motion visual polish for the list row entrance
+- Provide a short video capture in the repo preview section

@@ -311,19 +311,22 @@ function Dots({ currentIdx }) {
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
       {Array.from({ length: TOTAL }).map((_, i) => {
         const active = i === currentIdx;
+        const isList = i === LIST_IDX;
         return (
           <div
             key={i}
             role="tab"
             aria-selected={active}
-            aria-label={i === LIST_IDX ? "List view" : `Card ${i + 1}`}
+            aria-label={isList ? "List view" : `Card ${i + 1}`}
             style={{
-              width: 9, height: 9,
-              background: active ? "#333" : "transparent",
-              border: `1.5px solid ${active ? "#333" : "#bbb"}`,
-              transform: "rotate(45deg)",
+              width: active ? (isList ? 12 : 14) : 8,
+              height: active ? (isList ? 12 : 8) : 8,
+              background: active ? (isList ? "#ff6b9d" : "#333") : "transparent",
+              border: `1.5px solid ${active ? (isList ? "#ff6b9d" : "#333") : "#bbb"}`,
+              borderRadius: isList ? 2 : "50%",
+              transform: isList ? "rotate(45deg)" : "none",
               flexShrink: 0,
-              transition: "background .15s, border-color .15s",
+              transition: "background .2s, border-color .2s, width .2s, height .2s",
             }}
           />
         );
@@ -342,8 +345,22 @@ export default function CardStackCarousel() {
 
   const [transforms, setTransforms] = useState(() => restingState(0));
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => { idxRef.current = currentIdx; }, [currentIdx]);
+
+  useEffect(() => {
+    const query = "(prefers-reduced-motion: reduce)";
+    const media = window.matchMedia(query);
+    const update = () => setReduceMotion(media.matches);
+    update();
+    if (media.addEventListener) {
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }
+    media.addListener(update);
+    return () => media.removeListener(update);
+  }, []);
 
   const cw = () => (stackRef.current?.offsetWidth ?? 380) - 36;
 
@@ -352,6 +369,7 @@ export default function CardStackCarousel() {
     animatingRef.current = true;
     cancelRef.current = runAnim(dur, frames, () => {
       animatingRef.current = false;
+      cancelRef.current = null;
       done?.();
     });
   }
@@ -360,21 +378,32 @@ export default function CardStackCarousel() {
   const commitForward = useCallback((fromX) => {
     const W = cw();
     const fi = idxRef.current;
+    if (fi >= LIST_IDX) return;
     const ti = fi + 1;
     const toList = ti === LIST_IDX;
+    const duration = reduceMotion ? 120 : ANIM_DUR;
 
-    startAnim(ANIM_DUR, (t) => {
+    startAnim(duration, (t) => {
       const eq = easeOutQuint(t);
       const ec = easeOutCubic(t);
       setTransforms((prev) => {
         const n = { ...prev };
-        n[`c${fi}`] = { ...n[`c${fi}`], x: lerp(fromX, W * 1.25, eq), op: lerp(1, 0, Math.min(t * 2.5, 1)) };
-        if (toList) {
-          n.list = { ...n.list, x: lerp(50, 0, ec), op: easeOutCubic(t), pe: "none", z: 10 };
+        if (reduceMotion) {
+          n[`c${fi}`] = { ...n[`c${fi}`], x: 0, op: 1 - t };
+          if (toList) {
+            n.list = { ...n.list, x: 0, op: t, pe: "none", z: 10 };
+          } else {
+            n[`c${fi+1}`] = { ...n[`c${fi+1}`], x: 0, sc: 1, op: 1, z: 10, pe: "auto" };
+          }
         } else {
-          if (fi+1 < CARDS.length) n[`c${fi+1}`] = { ...n[`c${fi+1}`], x: lerp(PEEK1, 0, ec), sc: lerp(0.97,1,ec), op: lerp(0.9,1,t), z:10 };
-          if (fi+2 < CARDS.length) n[`c${fi+2}`] = { ...n[`c${fi+2}`], x: lerp(PEEK2,PEEK1,ec), sc: lerp(0.94,0.97,ec), op: lerp(0.6,0.9,t) };
-          if (fi+3 < CARDS.length) n[`c${fi+3}`] = { ...n[`c${fi+3}`], x: lerp(PEEK2+10,PEEK2,ec), sc: lerp(0.91,0.94,ec), op: lerp(0,0.6,t) };
+          n[`c${fi}`] = { ...n[`c${fi}`], x: lerp(fromX, W * 1.25, eq), op: lerp(1, 0, Math.min(t * 2.5, 1)) };
+          if (toList) {
+            n.list = { ...n.list, x: lerp(50, 0, ec), op: easeOutCubic(t), pe: "none", z: 10 };
+          } else {
+            if (fi + 1 < CARDS.length) n[`c${fi+1}`] = { ...n[`c${fi+1}`], x: lerp(PEEK1, 0, ec), sc: lerp(0.97, 1, ec), op: lerp(0.9, 1, t), z: 10 };
+            if (fi + 2 < CARDS.length) n[`c${fi+2}`] = { ...n[`c${fi+2}`], x: lerp(PEEK2, PEEK1, ec), sc: lerp(0.94, 0.97, ec), op: lerp(0.6, 0.9, t) };
+            if (fi + 3 < CARDS.length) n[`c${fi+3}`] = { ...n[`c${fi+3}`], x: lerp(PEEK2 + 10, PEEK2, ec), sc: lerp(0.91, 0.94, ec), op: lerp(0, 0.6, t) };
+          }
         }
         return n;
       });
@@ -383,28 +412,39 @@ export default function CardStackCarousel() {
       setCurrentIdx(ti);
       setTransforms(restingState(ti));
     });
-  }, []);
+  }, [reduceMotion]);
 
   // ── Commit backward ───────────────────────────────────────────────────────
   const commitBackward = useCallback((fromX) => {
     const W = cw();
     const fi = idxRef.current;
+    if (fi <= 0) return;
     const ti = fi - 1;
     const fromList = fi === LIST_IDX;
+    const duration = reduceMotion ? 120 : ANIM_DUR;
 
-    startAnim(ANIM_DUR, (t) => {
+    startAnim(duration, (t) => {
       const eq = easeOutQuint(t);
       const ec = easeOutCubic(t);
       setTransforms((prev) => {
         const n = { ...prev };
-        if (fromList) {
-          n.list = { ...n.list, x: lerp(fromX, W * 1.25, eq), op: lerp(1, 0, Math.min(t * 2.5, 1)) };
+        if (reduceMotion) {
+          if (fromList) {
+            n.list = { ...n.list, x: 0, op: 1 - t };
+          } else {
+            n[`c${fi}`] = { ...n[`c${fi}`], x: 0, op: 1 - t };
+          }
+          n[`c${ti}`] = { ...n[`c${ti}`], x: 0, sc: 1, op: 1, z: 10, pe: "auto" };
         } else {
-          n[`c${fi}`] = { ...n[`c${fi}`], x: lerp(fromX, W * 1.25, eq), op: lerp(1, 0, Math.min(t * 2.5, 1)) };
-        }
-        n[`c${ti}`] = { ...n[`c${ti}`], x: lerp(-W*0.7, 0, ec), sc: lerp(0.95,1,ec), op: easeOutCubic(t), z:10 };
-        if (!fromList && fi < CARDS.length) {
-          n[`c${fi}`] = { ...n[`c${fi}`], x: lerp(fromX, PEEK1, ec), sc: lerp(1,0.97,ec), op: lerp(1,0.9,t) };
+          if (fromList) {
+            n.list = { ...n.list, x: lerp(fromX, W * 1.25, eq), op: lerp(1, 0, Math.min(t * 2.5, 1)) };
+          } else {
+            n[`c${fi}`] = { ...n[`c${fi}`], x: lerp(fromX, W * 1.25, eq), op: lerp(1, 0, Math.min(t * 2.5, 1)) };
+          }
+          n[`c${ti}`] = { ...n[`c${ti}`], x: lerp(-W * 0.7, 0, ec), sc: lerp(0.95, 1, ec), op: easeOutCubic(t), z: 10 };
+          if (!fromList && fi < CARDS.length) {
+            n[`c${fi}`] = { ...n[`c${fi}`], x: lerp(fromX, PEEK1, ec), sc: lerp(1, 0.97, ec), op: lerp(1, 0.9, t) };
+          }
         }
         return n;
       });
@@ -413,30 +453,40 @@ export default function CardStackCarousel() {
       setCurrentIdx(ti);
       setTransforms(restingState(ti));
     });
-  }, []);
+  }, [reduceMotion]);
 
   // ── Snap back ─────────────────────────────────────────────────────────────
   const snapBack = useCallback((fromX, peek1X) => {
     const idx = idxRef.current;
-    startAnim(SNAP_DUR, (t) => {
+    const duration = reduceMotion ? 120 : SNAP_DUR;
+    startAnim(duration, (t) => {
       const e = easeOutQuint(t);
       setTransforms((prev) => {
         const n = { ...prev };
-        if (idx === LIST_IDX) {
-          n.list = { ...n.list, x: lerp(fromX, 0, e) };
+        if (reduceMotion) {
+          if (idx === LIST_IDX) {
+            n.list = { ...n.list, x: 0, op: 1 };
+          } else {
+            n[`c${idx}`] = { ...n[`c${idx}`], x: 0, op: 1 };
+            if (idx + 1 < CARDS.length) n[`c${idx+1}`] = { ...n[`c${idx+1}`], x: PEEK1, sc: 0.97, op: 0.9 };
+          }
         } else {
-          n[`c${idx}`]   = { ...n[`c${idx}`],   x: lerp(fromX, 0, e) };
-          if (idx+1 < CARDS.length)
-            n[`c${idx+1}`] = { ...n[`c${idx+1}`], x: lerp(peek1X ?? PEEK1, PEEK1, e) };
+          if (idx === LIST_IDX) {
+            n.list = { ...n.list, x: lerp(fromX, 0, e) };
+          } else {
+            n[`c${idx}`]   = { ...n[`c${idx}`],   x: lerp(fromX, 0, e) };
+            if (idx + 1 < CARDS.length) n[`c${idx+1}`] = { ...n[`c${idx+1}`], x: lerp(peek1X ?? PEEK1, PEEK1, e) };
+          }
         }
         return n;
       });
     }, () => setTransforms(restingState(idx)));
-  }, []);
+  }, [reduceMotion]);
 
   // ── Pointer handlers ──────────────────────────────────────────────────────
   const onPointerDown = useCallback((e) => {
-    if (animatingRef.current) return;
+    cancelRef.current?.();
+    animatingRef.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragRef.current = { active: true, startX: e.clientX, committed: false };
   }, []);
