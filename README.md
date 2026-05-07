@@ -1,28 +1,21 @@
-# Card Stack Carousel
+AI Event Carousel — Frontend Animation Assignment
 
-A motion-first event recommendation carousel built for a chat-like assistant bubble.
+A modern card-stack carousel built with React, focused on smooth gesture interactions, layered animations, and polished UI choreography.
+Designed to simulate an AI assistant surfacing event recommendations inside a chat-style interface.
 
-## What’s implemented
-- Swipeable card stack with layered depth and peek cards
-- Card-to-card forward swipe with simultaneous front/back movement
-- Card-to-list transition at the final index
-- Backward list-to-card swipe with mirrored motion
-- Page-dot indicator that updates only at commit
-- Reduced-motion support with a 120ms cross-fade alternative
-- Responsive width recalculation on resize
-- Gesture interruption support for repeated swipes
+video recording : 
 
-## Tech stack
-- React
-- Inline CSS for fast, focused layout
-- `requestAnimationFrame` driven animation choreography
-
-## Notes
-- `src/components/CardStackCarousel1.jsx` is the polished implementation shown in `src/App.jsx`
-- The list mode is rendered as a compact vertical rows view after the last card
-- A screen recording should be captured locally to demonstrate real-time feel and gesture quality
-
-## Next improvements
-- Add a native React Native version
-- Add a dedicated reduced-motion visual polish for the list row entrance
-- Provide a short video capture in the repo preview section
+✨ Features
+🎴 Interactive stacked card carousel
+🖱️ Drag / swipe gesture support
+🌊 Smooth spring-based animations
+💬 Assistant-style message bubble layout
+📱 Fully responsive design
+⚡ Built with React + Tailwind CSS
+🎯 Focus on motion choreography & micro-interactions
+🧠 Clean and reusable component structure
+🛠️ Tech Stack
+React
+Tailwind CSS
+Framer Motion
+Vite
